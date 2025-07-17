@@ -1,0 +1,22 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: whoami-tls-ingress
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: whoami.${DOMAIN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: whoami
+                port:
+                  number: 80
+  tls:
+    - secretName: whoami-tls
+      hosts:
+        - whoami.${DOMAIN}
