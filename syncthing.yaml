@@ -1,0 +1,115 @@
+# Deployment of syncthing + tailscale sidecar container
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: syncthing
+  name: syncthing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: syncthing
+  template:
+    spec:
+      containers:
+        - env:
+            - name: UID
+              value: "1000"
+            - name: GID
+              value: "1000"
+          image: syncthing/syncthing
+          name: syncthing
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/syncthing/data
+              name: vol-data
+            - mountPath: /var/syncthing/config
+              name: vol-config
+        - env:
+            - name: TS_KUBE_SECRET
+              value: tailscale-auth
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  key: TS_AUTHKEY
+                  name: tailscale-auth
+                  optional: false
+            - name: TS_USERSPACE
+              value: "false"
+            - name: TS_HOSTNAME
+              value: syncthing
+            - name: TS_SERVE_CONFIG
+              value: serve.json
+          image: ghcr.io/tailscale/tailscale:latest
+          name: tailscale-syncthing-sidecar
+          resources: {}
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+          volumeMounts:
+            - mountPath: /serve.json
+              name: tailscale-serve
+              subPath: serve.json
+      volumes:
+        - name: vol-data
+          persistentVolumeClaim:
+            claimName: syncthing-data
+        - name: vol-config
+          persistentVolumeClaim:
+            claimName: syncthing-config
+        - configMap:
+            defaultMode: 420
+            name: tailscale-serve-config
+          name: tailscale-serve
+---
+# Volume used by syncthing to store configuration, mounted at /var/syncthing/config
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: syncthing-config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-path
+---
+# Volume used by syncthing to store the synced data, mounted at /var/syncthing/data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: syncthing-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: local-path
+---
+# ConfigMap used by the tailscale sidecar to automatically serve the WebUI (:8384) at the HTTPS port with TLS termination
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: syncthing-serve-config
+data:
+  serve.json: |
+    {
+        "TCP": {
+            "443": {
+                "HTTPS": true
+            }
+        },
+        "Web": {
+            "${TS_CERT_DOMAIN}:443": {
+                "Handlers": {
+                    "/": {
+                        "Proxy": "http://127.0.0.1:8384"
+                    }
+                }
+            }
+        }
+    }
