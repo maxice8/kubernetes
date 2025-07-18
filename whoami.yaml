@@ -1,3 +1,8 @@
+kind: namespace
+apiVersion: v1
+metadata:
+  name: whoami
+---
 # Deployment of whoami to be exposed over whoami.${DOMAIN}
 apiVersion: apps/v1
 kind: Deployment

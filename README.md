@@ -80,7 +80,6 @@ kubectl apply -f traefik/redirect-https.yaml
 I like to use this to test that everything is working.
 
 ```sh
-kubectl create namespace whoami
 cat whoami.yaml | envsubst | kubectl apply -f -
 ```
 
@@ -111,7 +110,6 @@ This will create a complete syncthing setup with the WebUI exposed over your tai
 3. A deployment using a pod with syncthing and the tailscale sidecar
 
 ```sh
-kubectl namespace create syncthing
  cat syncthing.yaml | TAILSCALE_KEY=<YOUR_TAILSCALE_KEY>?ephemeral=false envsubst '$TAILSCALE_KEY' | kubectl apply -f -
 ```
 

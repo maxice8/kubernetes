@@ -1,3 +1,9 @@
+---
+kind: namespace
+apiVersion: v1
+metadata:
+  name: syncthing
+---
 # Deployment of syncthing + tailscale sidecar container
 apiVersion: apps/v1
 kind: Deployment
