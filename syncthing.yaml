@@ -5,13 +5,19 @@ metadata:
   labels:
     app: syncthing
   name: syncthing
+  namespace: syncthing
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: syncthing
   template:
+    metadata:
+      labels:
+        app: syncthing
     spec:
+      serviceAccount: tailscale
+      serviceAccountName: tailscale
       containers:
         - env:
             - name: UID
@@ -52,7 +58,7 @@ spec:
                 - NET_ADMIN
           volumeMounts:
             - mountPath: /serve.json
-              name: tailscale-serve
+              name: serve-config
               subPath: serve.json
       volumes:
         - name: vol-data
@@ -61,16 +67,17 @@ spec:
         - name: vol-config
           persistentVolumeClaim:
             claimName: syncthing-config
-        - name: tailscale-serve
+        - name: serve-config
           configMap:
             defaultMode: 420
-            name: syncthing-serve-config
+            name: tailscale-serve-config
 ---
 # Volume used by syncthing to store configuration, mounted at /var/syncthing/config
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: syncthing-config
+  namespace: syncthing
 spec:
   accessModes:
     - ReadWriteOnce
@@ -84,6 +91,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: syncthing-data
+  namespace: syncthing
 spec:
   accessModes:
     - ReadWriteOnce
@@ -96,7 +104,8 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: syncthing-serve-config
+  name: tailscale-serve-config
+  namespace: syncthing
 data:
   serve.json: |
     {
@@ -115,3 +124,42 @@ data:
             }
         }
     }
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tailscale-auth
+  namespace: syncthing
+stringData:
+  TS_AUTHKEY: ${TAILSCALE_KEY}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tailscale
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tailscale
+  namespace: syncthing
+rules:
+  - apiGroups: [""]
+    resourceNames: ["tailscale-auth"]
+    resources: ["secrets"]
+    verbs: ["get", "update", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tailscale
+  namespace: syncthing
+subjects:
+  - kind: ServiceAccount
+    name: tailscale
+roleRef:
+  kind: Role
+  name: tailscale
+  apiGroup: rbac.authorization.k8s.io
