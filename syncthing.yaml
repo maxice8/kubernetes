@@ -41,6 +41,8 @@ spec:
               value: syncthing
             - name: TS_SERVE_CONFIG
               value: serve.json
+            - name: TS_EXTRA_ARGS
+              value: --advertise-tags=tag:container
           image: ghcr.io/tailscale/tailscale:latest
           name: tailscale-syncthing-sidecar
           resources: {}
@@ -59,10 +61,10 @@ spec:
         - name: vol-config
           persistentVolumeClaim:
             claimName: syncthing-config
-        - configMap:
+        - name: tailscale-serve
+          configMap:
             defaultMode: 420
-            name: tailscale-serve-config
-          name: tailscale-serve
+            name: syncthing-serve-config
 ---
 # Volume used by syncthing to store configuration, mounted at /var/syncthing/config
 apiVersion: v1

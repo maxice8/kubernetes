@@ -101,8 +101,8 @@ kubectl apply -f tailscale/rbac.yaml
 Generate your key in [Tailscale](https://login.tailscale.com/admin/settings/keys) and use it here
 
 ```sh
-# Reminder that you have to rotate this key every 90 days (or less if you configured so)
-cat tailscale/authkey.yaml | TAILSCALE_KEY=<REPLACE_WITH_YOUR_AUTH_KEY> envsbust | kubectl apply -f -
+# We use an OAuth client (the key starts with tskey-client- instead of tskey-auth-) which has no expiration
+cat tailscale/authkey.yaml | TAILSCALE_KEY=<REPLACE_WITH_YOUR_AUTH_KEY>?ephemeral=false envsbust | kubectl apply -f -
 ```
 
 ### Syncthing
