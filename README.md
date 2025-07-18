@@ -76,8 +76,6 @@ cat whoami.yaml | envsubst | kubectl apply -f -
 
 > Add DNS entry for git.${DOMAIN}
 
-Required variables: `DOMAIN`
-
 ```sh
 kubectl create namespace forgejo
 cat forgejo/pvc.yaml | envsubst | kubectl apply -f -
