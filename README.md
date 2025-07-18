@@ -5,9 +5,8 @@ This is my configuration for kubernetes, values are replaced with `envsubst`.
 ## Required Variables
 
 Each section has a `Required Variables` sentence that tells you which environment variables we expect to be set.
-In some cases these variables are sensitive data (like Tailscale Authentication Keys) so they are instead used directly in the `envsubst` command.
 
-Other non-sensitive variables are assumed to be present.
+In some cases these variables are sensitive data (like Tailscale Authentication Keys) so they are instead used directly in the `envsubst` command.
 
 ## Setup
 
@@ -100,8 +99,6 @@ cat forgejo/ingress.yaml | envsubst | kubectl apply -f -
 ```
 
 ### Syncthing
-
-> **Requires: Tailscale**
 
 This will create a complete syncthing setup with the WebUI exposed over your tailscale network, the following components are created:
 
