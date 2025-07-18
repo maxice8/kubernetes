@@ -80,8 +80,30 @@ cat forgejo/service.yaml | envsubst | kubectl apply -f -
 cat forgejo/ingress.yaml | envsubst | kubectl apply -f -
 ```
 
+### Tailscale
+
+This will add all the bits and pieces required for running [Tailscale](https://tailscale.com) sidecars, because they are easier to deal with than the k8s operators.
+
+Note that we assume you are using the `default` namespace to share all the Tailscale stuff, if you want to run each deployment with tailscale in a separate namespace you will need to apply for each namespace you are using.
+
+#### Role-Based Control Access (RBAC)
+
+```sh
+kubectl apply -f tailscale/rbac.yaml
+```
+
+#### Auth Key
+
+Generate your key in [Tailscale](https://login.tailscale.com/admin/settings/keys) and use it here
+
+```sh
+# Reminder that you have to rotate this key every 90 days (or less if you configured so)
+cat tailscale/authkey.yaml | TAILSCALE_KEY=<REPLACE_WITH_YOUR_AUTH_KEY> envsbust | kubectl apply -f -
+```
+
 #### Sources
 
 List of sources that helped me set this up:
 
 - [the k8s rabbithole (#5) - Rancher v2.6 with DNS-01 TLS/SSL Certificates (via Let's Encrypt and Cloudflare)](https://www.raptorswithhats.com/the-k8s-rabbit/)
+- [How to Secure Kubernetes Access with Tailscale](https://tailscale.com/learn/managing-access-to-kubernetes-with-tailscale)
