@@ -101,6 +101,16 @@ Generate your key in [Tailscale](https://login.tailscale.com/admin/settings/keys
 cat tailscale/authkey.yaml | TAILSCALE_KEY=<REPLACE_WITH_YOUR_AUTH_KEY> envsbust | kubectl apply -f -
 ```
 
+### Syncthing
+
+> **Requires: Tailscale**
+
+The WebUI is exposed over tailscale on `https://syncthing.<TAILNET_NAME>.ts.net`
+
+```sh
+kubectl apply -f syncthing.yaml
+```
+
 #### Sources
 
 List of sources that helped me set this up:
