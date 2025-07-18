@@ -58,9 +58,10 @@ After a while the page at `https://rancher.${DOMAIN}` should have a nice valid c
 I like to use this to test that everything is working.
 
 ```sh
-cat whoami/whoami.yaml | envsubst | kubectl apply -f -
-cat whoami/whoami-service.yaml | envsubst | kubectl apply -f -
-cat whoami/whoami-ingress-tls.yaml | envsubst | kubectl apply -f -
+kubectl create namespace whoami
+cat whoami/deployment.yaml | envsubst | kubectl apply -f -
+cat whoami/service.yaml | envsubst | kubectl apply -f -
+cat whoami/ingress.yaml | envsubst | kubectl apply -f -
 ```
 
 #### Sources
