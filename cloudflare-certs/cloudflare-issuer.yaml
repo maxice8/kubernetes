@@ -2,7 +2,7 @@
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: cloudflare-issuer
+  name: letsencrypt-prod
   namespace: cert-manager
 spec:
   acme:
@@ -11,8 +11,8 @@ spec:
     privateKeySecretRef:
       name: cluster-issuer-account-key
     solvers:
-    - dns01:
-        cloudflare:
-          apiTokenSecretRef:
-            name: cloudflare-api-token-secret
-            key: api-token
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-api-token-secret
+              key: api-token
