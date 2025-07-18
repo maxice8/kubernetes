@@ -36,7 +36,9 @@ helm install rancher rancher-latest/rancher --namespace cattle-system \
 
 ### Certs
 
-Set the variables `CLOUDFLARE_API_TOKEN` and `EMAIL` and run the following command, this will create a certificate-issuer that authenticates with cloudflare.
+Required variables: `CLOUDFLARE_API_TOKEN`, `EMAIL`
+
+This creates a certificate issuer using the cloudflare API that responds to the annotation of `cert-manager.io/cluster-issuer: letsencrypt-prod`
 
 ```sh
 cat cloudflare-certs/cloudflare.yaml | envsubst | kubectl apply -f -
