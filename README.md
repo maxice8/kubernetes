@@ -53,6 +53,14 @@ cat rancher/certificate.yaml | envsubst | kubectl apply -f
 
 After a while the page at `https://rancher.${DOMAIN}` should have a nice valid certificate.
 
+### Traefik
+
+Add a little HTTP to HTTPS redirect
+
+```sh
+kubectl apply -f traefik/redirect-https.yaml
+```
+
 ### Whoami
 
 > Add DNS entry for whoami.${DOMAIN}
@@ -117,3 +125,4 @@ List of sources that helped me set this up:
 
 - [the k8s rabbithole (#5) - Rancher v2.6 with DNS-01 TLS/SSL Certificates (via Let's Encrypt and Cloudflare)](https://www.raptorswithhats.com/the-k8s-rabbit/)
 - [How to Secure Kubernetes Access with Tailscale](https://tailscale.com/learn/managing-access-to-kubernetes-with-tailscale)
+- [HTTPS with Cert-Manager and Letsencrypt](https://k3s.rocks/https-cert-manager-letsencrypt/)
