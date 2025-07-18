@@ -2,11 +2,20 @@
 
 This is my configuration for kubernetes, values are replaced with `envsubst`.
 
+## Required Variables
+
+Each section has a `Required Variables` sentence that tells you which environment variables we expect to be set.
+In some cases these variables are sensitive data (like Tailscale Authentication Keys) so they are instead used directly in the `envsubst` command.
+
+Other non-sensitive variables are assumed to be present.
+
 ## Setup
 
 ### k3s
 
 > Add DNS entry for rancher.${DOMAIN} before setting up `k3s`
+>
+> Required environment variables: **DOMAIN**
 
 ```sh
 curl -sfL https://get.k3s.io | sh
@@ -15,6 +24,8 @@ sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 ```
 
 ### rancher + cert-manager
+
+> Required environment variables: **DOMAIN**
 
 ```sh
 helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
@@ -36,12 +47,12 @@ helm install rancher rancher-latest/rancher --namespace cattle-system \
 
 ### Certs
 
-Required variables: `CLOUDFLARE_API_TOKEN`, `EMAIL`
+> Required environment variables: **DOMAIN**, **EMAIL**
 
 This creates a certificate issuer using the cloudflare API that responds to the annotation of `cert-manager.io/cluster-issuer: letsencrypt-prod`
 
 ```sh
-cat cloudflare-certs/cloudflare.yaml | envsubst | kubectl apply -f -
+ cat cloudflare-certs/cloudflare.yaml | CLOUDFLARE_API_TOKEN=<YOUR_CLOUDFLARE_API_TOKEN> envsubst | kubectl apply -f -
 cat cloudflare-certs/cloudflare-issuer.yaml | envsubst | kubectl apply -f -
 ```
 
@@ -64,6 +75,8 @@ kubectl apply -f traefik/redirect-https.yaml
 ### Whoami
 
 > Add DNS entry for whoami.${DOMAIN}
+>
+> Required environment variables: **DOMAIN**
 
 I like to use this to test that everything is working.
 
@@ -75,6 +88,8 @@ cat whoami.yaml | envsubst | kubectl apply -f -
 ### Forgejo
 
 > Add DNS entry for git.${DOMAIN}
+>
+> Required environment variables: **DOMAIN**
 
 ```sh
 kubectl create namespace forgejo
@@ -88,10 +103,19 @@ cat forgejo/ingress.yaml | envsubst | kubectl apply -f -
 
 > **Requires: Tailscale**
 
-The WebUI is exposed over tailscale on `https://syncthing.<TAILNET_NAME>.ts.net`
+This will create a complete syncthing setup with the WebUI exposed over your tailscale network, the following components are created:
+
+1. Persistent Volume Claims to store syncthing on local-storage
+2. A Tailscale sidecar setup:
+   a. A secret called tailscale-auth holding your authentication key
+   b. A serviceaccount that will modify this tailscale-auth to store data alongside the authentication key
+   c. RBAC policies to allow the tailscale serviceaccount to edit the tailscale-auth secret
+   d. A configMap to serve the Syncthing WebUI (:8384) on `syncthing.<TAILNET_NAME>.ts.net` with a valid tailscale certificate
+3. A deployment using a pod with syncthing and the tailscale sidecar
 
 ```sh
-cat syncthing.yaml | TAILSCALE_KEY=<YOUR_TAILSCALE_KEY>?ephemeral=false envsubst '$TAILSCALE_KEY' | kubectl apply -f -
+kubectl namespace create syncthing
+ cat syncthing.yaml | TAILSCALE_KEY=<YOUR_TAILSCALE_KEY>?ephemeral=false envsubst '$TAILSCALE_KEY' | kubectl apply -f -
 ```
 
 #### Sources
