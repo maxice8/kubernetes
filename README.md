@@ -36,10 +36,16 @@ helm install rancher rancher-latest/rancher --namespace cattle-system \
 
 ### Certs
 
-Set the variables `CLOUDFLARE_API_TOKEN` and `EMAIL` and run the following command
+Set the variables `CLOUDFLARE_API_TOKEN` and `EMAIL` and run the following command, this will create a certificate-issuer that authenticates with cloudflare.
 
 ```sh
 cat cloudflare-certs/*.yaml | envsubst | kubectl apply -f-
+```
+
+Now create a certificate object:
+
+```sh
+cat rancher/*.yaml | envsubst | kubectl apply -f-
 ```
 
 After a while the page at `https://rancher.${DOMAIN}` should have a nice valid certificate.
