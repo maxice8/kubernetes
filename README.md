@@ -84,27 +84,6 @@ cat forgejo/service.yaml | envsubst | kubectl apply -f -
 cat forgejo/ingress.yaml | envsubst | kubectl apply -f -
 ```
 
-### Tailscale
-
-This will add all the bits and pieces required for running [Tailscale](https://tailscale.com) sidecars, because they are easier to deal with than the k8s operators.
-
-Note that we assume you are using the `default` namespace to share all the Tailscale stuff, if you want to run each deployment with tailscale in a separate namespace you will need to apply for each namespace you are using.
-
-#### Role-Based Control Access (RBAC)
-
-```sh
-kubectl apply -f tailscale/rbac.yaml
-```
-
-#### Auth Key
-
-Generate your key in [Tailscale](https://login.tailscale.com/admin/settings/keys) and use it here
-
-```sh
-# We use an OAuth client (the key starts with tskey-client- instead of tskey-auth-) which has no expiration
-cat tailscale/authkey.yaml | TAILSCALE_KEY=<REPLACE_WITH_YOUR_AUTH_KEY>?ephemeral=false envsbust | kubectl apply -f -
-```
-
 ### Syncthing
 
 > **Requires: Tailscale**
@@ -112,7 +91,7 @@ cat tailscale/authkey.yaml | TAILSCALE_KEY=<REPLACE_WITH_YOUR_AUTH_KEY>?ephemera
 The WebUI is exposed over tailscale on `https://syncthing.<TAILNET_NAME>.ts.net`
 
 ```sh
-kubectl apply -f syncthing.yaml
+cat syncthing.yaml | TAILSCALE_KEY=<YOUR_TAILSCALE_KEY>?ephemeral=false envsubst '$TAILSCALE_KEY' | kubectl apply -f -
 ```
 
 #### Sources
