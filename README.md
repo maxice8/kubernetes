@@ -66,6 +66,20 @@ cat whoami/service.yaml | envsubst | kubectl apply -f -
 cat whoami/ingress.yaml | envsubst | kubectl apply -f -
 ```
 
+### Forgejo
+
+> Add DNS entry for git.${DOMAIN}
+
+Required variables: `DOMAIN`
+
+```sh
+kubectl create namespace forgejo
+cat forgejo/pvc.yaml | envsubst | kubectl apply -f -
+cat forgejo/deployment.yaml | envsubst | kubectl apply -f -
+cat forgejo/service.yaml | envsubst | kubectl apply -f -
+cat forgejo/ingress.yaml | envsubst | kubectl apply -f -
+```
+
 #### Sources
 
 List of sources that helped me set this up:
