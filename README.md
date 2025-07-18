@@ -69,9 +69,7 @@ I like to use this to test that everything is working.
 
 ```sh
 kubectl create namespace whoami
-cat whoami/deployment.yaml | envsubst | kubectl apply -f -
-cat whoami/service.yaml | envsubst | kubectl apply -f -
-cat whoami/ingress.yaml | envsubst | kubectl apply -f -
+cat whoami.yaml | envsubst | kubectl apply -f -
 ```
 
 ### Forgejo
