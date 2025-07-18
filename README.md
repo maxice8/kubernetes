@@ -59,3 +59,9 @@ I like to use this to test that everything is working.
 ```sh
 cat whoami/*.yaml | envsubst | kubectl apply -f-
 ```
+
+#### Sources
+
+List of sources that helped me set this up:
+
+- [the k8s rabbithole (#5) - Rancher v2.6 with DNS-01 TLS/SSL Certificates (via Let's Encrypt and Cloudflare)](https://www.raptorswithhats.com/the-k8s-rabbit/)
