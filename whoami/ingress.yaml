@@ -4,6 +4,8 @@ kind: Ingress
 metadata:
   name: whoami-tls-ingress
   namespace: whoami
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: traefik
   rules:
