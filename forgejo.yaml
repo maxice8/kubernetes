@@ -1,0 +1,98 @@
+﻿---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: forgejo
+---
+# Deployment of forgejo
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo
+  namespace: forgejo
+spec:
+  selector:
+    matchLabels:
+      app: forgejo
+  template:
+    metadata:
+      labels:
+        app: forgejo
+    spec:
+      containers:
+        - name: forgejo
+          image: codeberg.org/forgejo/forgejo:9
+          resources: {}
+          volumeMounts:
+            - name: forgejo-data
+              mountPath: /data
+          env:
+            - name: USER_UID
+              value: "1000"
+            - name: USER_GID
+              value: "1000"
+            - name: FORGEJO__service__DISABLE_REGISTRATION
+              value: "true"
+            - name: FORGEJO__service_0x2E__REQUIRE_SIGNIN_VIEW
+              value: "false"
+            - name: FORGEJO__service__REQUIRE_SIGNIN_VIEW
+              value: "false"
+      volumes:
+        - name: forgejo-data
+          persistentVolumeClaim:
+            claimName: forgejo-pvc
+---
+# Persistent volume for forgejo, mounted in /data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: forgejo-pvc
+  namespace: forgejo
+spec:
+  resources:
+    requests:
+      storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+---
+# Service exposing the Web UI port
+apiVersion: v1
+kind: Service
+metadata:
+  name: forgejo
+  namespace: forgejo
+spec:
+  selector:
+    app: forgejo
+  ports:
+    - port: 3000
+      targetPort: 3000
+---
+# Ingress exposing the Web UI at git.${DOMAIN}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: forgejo-tls-ingress
+  namespace: forgejo
+  labels:
+    app.kubernetes.io/name: forgejo-tls-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: git.${DOMAIN}
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: forgejo
+                port:
+                  number: 3000
+  tls:
+    - hosts:
+        - git.${DOMAIN}
+      secretName: forgejo-tls

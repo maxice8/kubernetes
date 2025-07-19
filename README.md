@@ -90,11 +90,7 @@ cat whoami.yaml | envsubst | kubectl apply -f -
 > Required environment variables: **DOMAIN**
 
 ```sh
-kubectl create namespace forgejo
-cat forgejo/pvc.yaml | envsubst | kubectl apply -f -
-cat forgejo/deployment.yaml | envsubst | kubectl apply -f -
-cat forgejo/service.yaml | envsubst | kubectl apply -f -
-cat forgejo/ingress.yaml | envsubst | kubectl apply -f -
+cat forgejo.yaml | envsubst | kubectl apply -f -
 ```
 
 ### Syncthing
