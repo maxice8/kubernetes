@@ -107,7 +107,7 @@ This will create a complete syncthing setup with the WebUI exposed over your tai
 4. A deployment using a pod with syncthing and the tailscale sidecar
 
 ```sh
- cat syncthing.yaml | TAILSCALE_KEY=<YOUR_TAILSCALE_KEY>?ephemeral=false envsubst '$TAILSCALE_KEY' | kubectl apply -f -
+ cat syncthing.yaml | TAILSCALE_KEY=<YOUR_TAILSCALE_KEY> envsubst '$TAILSCALE_KEY' | kubectl apply -f -
 ```
 
 ### Uptime-kuma
@@ -126,7 +126,7 @@ This will create a complete syncthing setup with the WebUI exposed over your tai
 4. A deployment using a pod with syncthing and the tailscale sidecar
 
 ```sh
- cat uptime-kuma.yaml | TAILSCALE_KEY=<YOUR_TAILSCALE_KEY>?ephemeral=false envsubst '$TAILSCALE_KEY' | kubectl apply -f -
+ cat uptime-kuma.yaml | TAILSCALE_KEY=<YOUR_TAILSCALE_KEY> envsubst '$TAILSCALE_KEY' | kubectl apply -f -
 ```
 
 #### Sources
