@@ -104,10 +104,10 @@ This will create a complete syncthing setup with the WebUI exposed over your tai
 1. A namespace called syncthing
 2. Persistent Volume Claims to store syncthing configuration and data via local-storage
 3. A Tailscale sidecar setup:
-   a. A secret called tailscale-auth holding your authentication key
-   b. A serviceaccount that will modify this tailscale-auth to store data alongside the authentication key
-   c. RBAC policies to allow the tailscale serviceaccount to edit the tailscale-auth secret
-   d. A configMap to serve the Syncthing WebUI (:8384) on `syncthing.<TAILNET_NAME>.ts.net` with a valid tailscale certificate
+   - A secret called tailscale-auth holding your authentication key
+   - A serviceaccount that will modify this tailscale-auth to store data alongside the authentication key
+   - RBAC policies to allow the tailscale serviceaccount to edit the tailscale-auth secret
+   - A configMap to serve the Syncthing WebUI (:8384) on `syncthing.<TAILNET_NAME>.ts.net` with a valid tailscale certificate
 4. A deployment using a pod with syncthing and the tailscale sidecar
 
 ```sh
@@ -123,10 +123,10 @@ This will create a complete syncthing setup with the WebUI exposed over your tai
 1. A namespace called kuma
 2. Persistent Volume Claims to store uptime-kuma data via local-storage
 3. A Tailscale sidecar setup:
-   a. A secret called tailscale-auth holding your authentication key
-   b. A serviceaccount that will modify this tailscale-auth to store data alongside the authentication key
-   c. RBAC policies to allow the tailscale serviceaccount to edit the tailscale-auth secret
-   d. A configMap to serve the Uptime Kuma WebUI (:3001) on `uptime.<TAILNET_NAME>.ts.net` with a valid tailscale certificate
+     - A secret called tailscale-auth holding your authentication key
+     - A serviceaccount that will modify this tailscale-auth to store data alongside the authentication key
+     - RBAC policies to allow the tailscale serviceaccount to edit the tailscale-auth secret
+     - A configMap to serve the Uptime Kuma WebUI (:3001) on `uptime.<TAILNET_NAME>.ts.net` with a valid tailscale certificate
 4. A deployment using a pod with syncthing and the tailscale sidecar
 
 ```sh
