@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: forgejo
-          image: codeberg.org/forgejo/forgejo:9
+          image: codeberg.org/forgejo/forgejo:12
           resources: {}
           volumeMounts:
             - name: forgejo-data
