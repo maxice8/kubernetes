@@ -88,6 +88,8 @@ cat whoami.yaml | envsubst | kubectl apply -f -
 > Add DNS entry for git.${DOMAIN}
 >
 > Required environment variables: **DOMAIN**
+>
+> Requires port 22 to be unused (e.g. using Tailscale for SSH) as port 22 is redirected to git in the deployment
 
 ```sh
 cat forgejo.yaml | envsubst | kubectl apply -f -
