@@ -56,9 +56,9 @@ certs:
 		exit_code=1; \
 	fi; \
 	if [ $$exit_code -ne 0 ]; then exit $$exit_code; fi
-	#cat cloudflare-certs/cloudflare.yaml | envsubst | kubectl apply -f -
-	#cat cloudflare-certs/cloudflare-issuer.yaml | envsubst | kubectl apply -f -
-	#cat rancher/certificate.yaml | envsubst | kubectl apply -f -
+	cat cloudflare-certs/cloudflare.yaml | envsubst | kubectl apply -f -
+	cat cloudflare-certs/cloudflare-issuer.yaml | envsubst | kubectl apply -f -
+	cat rancher/certificate.yaml | envsubst | kubectl apply -f -
 
 traefik:
 	kubectl apply -f traefik/redirect-https.yaml
