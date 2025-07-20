@@ -2,13 +2,17 @@
 
 This is my configuration for kubernetes, values are replaced with `envsubst`.
 
+## Makefile
+
+I have a Makefile that provides targets to do the setup/deployment necessary.
+
 ## Required Variables
 
 Each section has a `Required Variables` sentence that tells you which environment variables we expect to be set.
 
 In some cases these variables are sensitive data (like Tailscale Authentication Keys) so they are instead used directly in the `envsubst` command.
 
-## Setup
+## Targets
 
 ### k3s
 
@@ -17,48 +21,27 @@ In some cases these variables are sensitive data (like Tailscale Authentication 
 > Required environment variables: **DOMAIN**
 
 ```sh
-curl -sfL https://get.k3s.io | sh
-mkdir ~/.kube/config
-sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+make k3s
 ```
 
 ### rancher + cert-manager
 
+<!-- TODO: SPLIT RANCHER FROM CERT-MANAGER -->
+
 > Required environment variables: **DOMAIN**
 
 ```sh
-helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
-kubectl create namespace cattle-system
-
-helm repo add jetstack https://charts.jetstack.io
-helm repo update
-helm install cert-manager jetstack/cert-manager \
-     --namespace cert-manager \
-     --create-namespace \
-     --set crds.enabled=true
-
-helm install rancher rancher-latest/rancher --namespace cattle-system \
-     --set hostname=rancher.${DOMAIN} \
-     --set replicas=1 \
-     --set ingress.tls.source=secret \
-     --create-namespace
+make cert_manager
 ```
 
 ### Certs
 
 > Required environment variables: **DOMAIN**, **EMAIL**
 
-This creates a certificate issuer using the cloudflare API that responds to the annotation of `cert-manager.io/cluster-issuer: letsencrypt-prod`
+This creates a certificate issuer using the cloudflare API that responds to the annotation of `cert-manager.io/cluster-issuer: letsencrypt-prod`, and an accompanying certificate for rancher.
 
 ```sh
- cat cloudflare-certs/cloudflare.yaml | CLOUDFLARE_API_TOKEN=<YOUR_CLOUDFLARE_API_TOKEN> envsubst | kubectl apply -f -
-cat cloudflare-certs/cloudflare-issuer.yaml | envsubst | kubectl apply -f -
-```
-
-Now create a certificate object:
-
-```sh
-cat rancher/certificate.yaml | envsubst | kubectl apply -f
+make certs
 ```
 
 After a while the page at `https://rancher.${DOMAIN}` should have a nice valid certificate.
@@ -68,7 +51,7 @@ After a while the page at `https://rancher.${DOMAIN}` should have a nice valid c
 Add a little HTTP to HTTPS redirect
 
 ```sh
-kubectl apply -f traefik/redirect-https.yaml
+make traefik
 ```
 
 ### Whoami
@@ -80,7 +63,7 @@ kubectl apply -f traefik/redirect-https.yaml
 I like to use this to test that everything is working.
 
 ```sh
-cat whoami.yaml | envsubst | kubectl apply -f -
+make whoami
 ```
 
 ### Forgejo
@@ -92,7 +75,7 @@ cat whoami.yaml | envsubst | kubectl apply -f -
 > Requires port 22 to be unused (e.g. using Tailscale for SSH) as port 22 is redirected to git in the deployment
 
 ```sh
-cat forgejo.yaml | envsubst | kubectl apply -f -
+make forgejo
 ```
 
 ### Syncthing
@@ -109,7 +92,7 @@ This will create a complete syncthing setup with the WebUI exposed over your tai
 4. A deployment using a pod with syncthing and the tailscale sidecar
 
 ```sh
- cat syncthing.yaml | TAILSCALE_KEY=<YOUR_TAILSCALE_KEY> envsubst '$TAILSCALE_KEY' | kubectl apply -f -
+make syncthing
 ```
 
 ### Uptime-kuma
@@ -128,7 +111,7 @@ This will create a complete syncthing setup with the WebUI exposed over your tai
 4. A deployment using a pod with syncthing and the tailscale sidecar
 
 ```sh
- cat uptime-kuma.yaml | TAILSCALE_KEY=<YOUR_TAILSCALE_KEY> envsubst '$TAILSCALE_KEY' | kubectl apply -f -
+make uptime_kuma
 ```
 
 #### Sources
