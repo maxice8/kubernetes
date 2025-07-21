@@ -131,6 +131,30 @@ data:
         }
     }
 ---
+# Service that exposes the syncthing ports for syncing to the outside world
+apiVersion: v1
+kind: Service
+metadata:
+  name: syncthing-sync
+  namespace: syncthing
+spec:
+  selector:
+    app: syncthing
+  ports:
+    - port: 22000
+      targetPort: 22000
+      name: sync-tcp
+      protocol: TCP
+    - port: 22000
+      targetPort: 22000
+      name: sync-udp
+      protocol: UDP
+    - port: 21027
+      targetPort: 21027
+      name: discovery
+      protocol: UDP
+  type: LoadBalancer
+---
 apiVersion: v1
 kind: Secret
 metadata:
