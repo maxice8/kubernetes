@@ -103,12 +103,9 @@ This will create a complete syncthing setup with the WebUI exposed over your tai
 
 1. A namespace called kuma
 2. Persistent Volume Claims to store uptime-kuma data via local-storage
-3. A Tailscale sidecar setup:
-     - A secret called tailscale-auth holding your authentication key
-     - A serviceaccount that will modify this tailscale-auth to store data alongside the authentication key
-     - RBAC policies to allow the tailscale serviceaccount to edit the tailscale-auth secret
-     - A configMap to serve the Uptime Kuma WebUI (:3001) on `uptime.<TAILNET_NAME>.ts.net` with a valid tailscale certificate
-4. A deployment using a pod with syncthing and the tailscale sidecar
+3. A deployment of uptime-kuma
+4. A service that connects to the port 3001 of the deployment
+5. An ingress that exposes the port 3001 of the deployment over HTTPS to your tailnet
 
 ```sh
 make uptime_kuma

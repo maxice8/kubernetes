@@ -20,8 +20,6 @@ spec:
       labels:
         app: uptime-kuma
     spec:
-      serviceAccount: tailscale
-      serviceAccountName: tailscale
       containers:
         - name: uptime-kuma
           image: louislam/uptime-kuma:1
@@ -37,42 +35,41 @@ spec:
           volumeMounts:
             - name: kuma-data
               mountPath: /app/data
-        - name: tailscale-uptime-kuma-sidecar
-          image: ghcr.io/tailscale/tailscale:latest
-          env:
-            - name: TS_KUBE_SECRET
-              value: tailscale-auth
-            - name: TS_AUTHKEY
-              valueFrom:
-                secretKeyRef:
-                  key: TS_AUTHKEY
-                  name: tailscale-auth
-                  optional: false
-            - name: TS_USERSPACE
-              value: "false"
-            - name: TS_HOSTNAME
-              value: uptime
-            - name: TS_SERVE_CONFIG
-              value: serve.json
-            - name: TS_EXTRA_ARGS
-              value: --advertise-tags=tag:container
-          resources: {}
-          securityContext:
-            capabilities:
-              add:
-                - NET_ADMIN
-          volumeMounts:
-            - mountPath: /serve.json
-              name: tailscale-serve
-              subPath: serve.json
       volumes:
         - name: kuma-data
           persistentVolumeClaim:
             claimName: uptime-kuma-data
-        - name: tailscale-serve
-          configMap:
-            defaultMode: 420
-            name: tailscale-serve-config
+---
+# Service that exposes the syncthing UI over a tailscale service
+apiVersion: v1
+kind: Service
+metadata:
+  name: uptime-kuma-ui
+  namespace: kuma
+spec:
+  selector:
+    app: uptime-kuma
+  ports:
+    - name: https
+      port: 3001
+      targetPort: 3001
+---
+# Ingress for syncthing
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: uptime-kuma-tls-ingress
+  namespace: kuma
+spec:
+  defaultBackend:
+    service:
+      name: uptime-kuma-ui
+      port:
+        number: 3001
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - uptime
 ---
 # Volume used by uptime-kuma to store data, mounted on /app/data
 apiVersion: v1
@@ -87,68 +84,3 @@ spec:
     requests:
       storage: 1Gi
   storageClassName: local-path
----
-# ConfigMap used by the tailscale sidecar to automatically serve the WebUI (:3001) at the HTTPS port with TLS termination
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tailscale-serve-config
-  namespace: kuma
-data:
-  serve.json: |
-    {
-        "TCP": {
-            "443": {
-                "HTTPS": true
-            }
-        },
-        "Web": {
-            "${TS_CERT_DOMAIN}:443": {
-                "Handlers": {
-                    "/": {
-                        "Proxy": "http://127.0.0.1:3001"
-                    }
-                }
-            }
-        }
-    }
-
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: tailscale-auth
-  namespace: kuma
-stringData:
-  TS_AUTHKEY: ${TAILSCALE_KEY}
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: tailscale
-  namespace: kuma
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: tailscale
-  namespace: kuma
-rules:
-  - apiGroups: [""]
-    resourceNames: ["tailscale-auth"]
-    resources: ["secrets"]
-    verbs: ["get", "update", "patch"]
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: tailscale
-  namespace: kuma
-subjects:
-  - kind: ServiceAccount
-    name: tailscale
-roleRef:
-  kind: Role
-  name: tailscale
-  apiGroup: rbac.authorization.k8s.io
