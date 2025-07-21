@@ -24,14 +24,18 @@ In some cases these variables are sensitive data (like Tailscale Authentication 
 make k3s
 ```
 
-### rancher + cert-manager
+### cert-manager
 
-<!-- TODO: SPLIT RANCHER FROM CERT-MANAGER -->
+```sh
+make cert_manager
+```
+
+### rancher
 
 > Required environment variables: **DOMAIN**
 
 ```sh
-make cert_manager
+make rancher
 ```
 
 ### Certs

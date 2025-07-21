@@ -8,7 +8,8 @@ all: help
 help:
 	@echo "Available targets:"
 	@echo "  k3s                 - Installs k3s Kubernetes."
-	@echo "  cert_manager        - Installs Rancher and Cert-Manager."
+	@echo "  cert_manager        - Installs Cert-Manager."
+	@echo "  rancher             - Installs Rancher."
 	@echo "  certs               - Configures Cert-Manager with Cloudflare and creates a certificate."
 	@echo "  traefik             - Adds an HTTP to HTTPS redirect with Traefik."
 	@echo "  whoami              - Deploys a 'whoami' application for testing."
@@ -26,9 +27,6 @@ k3s:
 	sudo chown $(shell id -u):$(shell id -g) ~/.kube/config
 
 cert_manager:
-	@if [ -z "$(DOMAIN)" ]; then $(call log_error,Error: DOMAIN environment variable is required.); exit 1; fi
-	helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
-	kubectl create namespace cattle-system --dry-run=client -o yaml | kubectl apply -f -
 	helm repo add jetstack https://charts.jetstack.io
 	helm repo update
 	helm install cert-manager jetstack/cert-manager \
@@ -36,10 +34,17 @@ cert_manager:
 		--create-namespace \
 		--set crds.enabled=true \
 		--wait
+
+rancher:
+	@if [ -z "$(DOMAIN)" ]; then $(call log_error,Error: DOMAIN environment variable is required.); exit 1; fi
+	helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
+	kubectl create namespace cattle-system --dry-run=client -o yaml | kubectl apply -f -
+	helm repo update
 	helm install rancher rancher-latest/rancher --namespace cattle-system \
 		--set hostname=rancher.$(DOMAIN) \
 		--set replicas=1 \
-		--set ingress.tls.source=secret
+		--set ingress.tls.source=secret \
+		--wait
 
 certs:
 	@exit_code=0; \
