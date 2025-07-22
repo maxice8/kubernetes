@@ -88,12 +88,10 @@ This will create a complete syncthing setup with the WebUI exposed over your tai
 
 1. A namespace called syncthing
 2. Persistent Volume Claims to store syncthing configuration and data via local-storage
-3. A Tailscale sidecar setup:
-   - A secret called tailscale-auth holding your authentication key
-   - A serviceaccount that will modify this tailscale-auth to store data alongside the authentication key
-   - RBAC policies to allow the tailscale serviceaccount to edit the tailscale-auth secret
-   - A configMap to serve the Syncthing WebUI (:8384) on `syncthing.<TAILNET_NAME>.ts.net` with a valid tailscale certificate
-4. A deployment using a pod with syncthing and the tailscale sidecar
+3. A deployment of syncthing
+4. A service that connects to the port 8384 of the deployment
+5. A service that Load Balances the ports 22000 and 21017
+6. An ingress that exposes the port 8384 of the deployment over HTTPS to your tailnet
 
 ```sh
 make syncthing

@@ -80,7 +80,6 @@ forgejo:
 	cat forgejo.yaml | envsubst | kubectl apply -f -
 
 syncthing:
-	@if [ -z "$(TAILSCALE_KEY)" ]; then $(call log_error,Error: TAILSCALE_KEY environment variable is required.); exit 1; fi
 	cat syncthing.yaml | envsubst | kubectl apply -f -
 
 uptime_kuma:

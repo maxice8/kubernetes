@@ -22,8 +22,6 @@ spec:
       labels:
         app: syncthing
     spec:
-      serviceAccount: tailscale
-      serviceAccountName: tailscale
       containers:
         - env:
             - name: UID
@@ -38,34 +36,6 @@ spec:
               name: vol-data
             - mountPath: /var/syncthing/config
               name: vol-config
-        - env:
-            - name: TS_KUBE_SECRET
-              value: tailscale-auth
-            - name: TS_AUTHKEY
-              valueFrom:
-                secretKeyRef:
-                  key: TS_AUTHKEY
-                  name: tailscale-auth
-                  optional: false
-            - name: TS_USERSPACE
-              value: "false"
-            - name: TS_HOSTNAME
-              value: syncthing
-            - name: TS_SERVE_CONFIG
-              value: serve.json
-            - name: TS_EXTRA_ARGS
-              value: --advertise-tags=tag:container
-          image: ghcr.io/tailscale/tailscale:latest
-          name: tailscale-syncthing-sidecar
-          resources: {}
-          securityContext:
-            capabilities:
-              add:
-                - NET_ADMIN
-          volumeMounts:
-            - mountPath: /serve.json
-              name: serve-config
-              subPath: serve.json
       volumes:
         - name: vol-data
           persistentVolumeClaim:
@@ -73,10 +43,6 @@ spec:
         - name: vol-config
           persistentVolumeClaim:
             claimName: syncthing-config
-        - name: serve-config
-          configMap:
-            defaultMode: 420
-            name: tailscale-serve-config
 ---
 # Volume used by syncthing to store configuration, mounted at /var/syncthing/config
 apiVersion: v1
@@ -106,30 +72,19 @@ spec:
       storage: 50Gi
   storageClassName: local-path
 ---
-# ConfigMap used by the tailscale sidecar to automatically serve the WebUI (:8384) at the HTTPS port with TLS termination
+# Service that exposes the syncthing UI over a tailscale service
 apiVersion: v1
-kind: ConfigMap
+kind: Service
 metadata:
-  name: tailscale-serve-config
+  name: syncthing-webui
   namespace: syncthing
-data:
-  serve.json: |
-    {
-        "TCP": {
-            "443": {
-                "HTTPS": true
-            }
-        },
-        "Web": {
-            "${TS_CERT_DOMAIN}:443": {
-                "Handlers": {
-                    "/": {
-                        "Proxy": "http://127.0.0.1:8384"
-                    }
-                }
-            }
-        }
-    }
+spec:
+  selector:
+    app: syncthing
+  ports:
+    - name: https
+      port: 8384
+      targetPort: 8384
 ---
 # Service that exposes the syncthing ports for syncing to the outside world
 apiVersion: v1
@@ -155,41 +110,19 @@ spec:
       protocol: UDP
   type: LoadBalancer
 ---
-apiVersion: v1
-kind: Secret
+# Ingress for syncthing
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: tailscale-auth
+  name: syncthing
   namespace: syncthing
-stringData:
-  TS_AUTHKEY: ${TAILSCALE_KEY}
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: tailscale
-  namespace: syncthing
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: tailscale
-  namespace: syncthing
-rules:
-  - apiGroups: [""]
-    resourceNames: ["tailscale-auth"]
-    resources: ["secrets"]
-    verbs: ["get", "update", "patch"]
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: tailscale
-  namespace: syncthing
-subjects:
-  - kind: ServiceAccount
-    name: tailscale
-roleRef:
-  kind: Role
-  name: tailscale
-  apiGroup: rbac.authorization.k8s.io
+spec:
+  defaultBackend:
+    service:
+      name: syncthing-webui
+      port:
+        number: 8384
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - syncthing
