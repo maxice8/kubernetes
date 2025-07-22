@@ -6,19 +6,11 @@ This is my configuration for kubernetes, values are replaced with `envsubst`.
 
 I have a Makefile that provides targets to do the setup/deployment necessary.
 
-## Required Variables
-
-Each section has a `Required Variables` sentence that tells you which environment variables we expect to be set.
-
-In some cases these variables are sensitive data (like Tailscale Authentication Keys) so they are instead used directly in the `envsubst` command.
-
 ## Targets
 
 ### k3s
 
 > Add DNS entry for rancher.${DOMAIN} before setting up `k3s`
->
-> Required environment variables: **DOMAIN**
 
 ```sh
 make k3s
@@ -32,15 +24,11 @@ make cert_manager
 
 ### rancher
 
-> Required environment variables: **DOMAIN**
-
 ```sh
 make rancher
 ```
 
 ### Certs
-
-> Required environment variables: **DOMAIN**, **EMAIL**
 
 This creates a certificate issuer using the cloudflare API that responds to the annotation of `cert-manager.io/cluster-issuer: letsencrypt-prod`, and an accompanying certificate for rancher.
 
@@ -61,8 +49,6 @@ make traefik
 ### Whoami
 
 > Add DNS entry for whoami.${DOMAIN}
->
-> Required environment variables: **DOMAIN**
 
 I like to use this to test that everything is working.
 
@@ -73,8 +59,6 @@ make whoami
 ### Forgejo
 
 > Add DNS entry for git.${DOMAIN}
->
-> Required environment variables: **DOMAIN**
 >
 > Requires port 22 to be unused (e.g. using Tailscale for SSH) as port 22 is redirected to git in the deployment
 
