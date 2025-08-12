@@ -1,0 +1,99 @@
+﻿kind: Namespace
+apiVersion: v1
+metadata:
+  name: ghost
+---
+# Container running Ghost
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ghost
+  namespace: ghost
+spec:
+  selector:
+    matchLabels:
+      app: ghost
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ghost
+    spec:
+      containers:
+        - name: ghost
+          image: ghost
+          resources: {}
+          env:
+            - name: database__client
+              value: sqlite3
+            - name: database__connection__filename
+              value: content/data/ghost.db
+            - name: database__useNullAsDefault
+              value: "true"
+            - name: database__debug
+              value: "false"
+            - name: url
+              value: http://blog.${DOMAIN}
+          ports:
+            - containerPort: 2368
+          volumeMounts:
+            - name: my-ghost-volume
+              mountPath: /var/lib/ghost/content
+      volumes:
+        - name: my-ghost-volume
+          persistentVolumeClaim:
+            claimName: ghost-pvc
+---
+# Cluster IP connecting Ghost to port 80
+apiVersion: v1
+kind: Service
+metadata:
+  name: ghost
+  namespace: ghost
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 2368
+  selector:
+    app: ghost
+---
+# Ingress to access ghost from blog.${DOMAIN}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ghost-ingress
+  namespace: ghost
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: blog.${DOMAIN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ghost
+                port:
+                  number: 80
+  tls:
+    - secretName: ghost-tls
+      hosts:
+        - blog.${DOMAIN}
+---
+# Persistent volume claim for Ghost to store its data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ghost-pvc
+  namespace: ghost
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi

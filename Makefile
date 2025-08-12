@@ -84,3 +84,7 @@ syncthing:
 
 uptime_kuma:
 	cat uptime-kuma.yaml | envsubst | kubectl apply -f -
+
+ghost:
+	@if [ -z "$(DOMAIN)" ]; then $(call log_error,Error: DOMAIN environment variable is required.); exit 1; fi
+	cat ghost.yaml | envsubst | kubectl apply -f -
