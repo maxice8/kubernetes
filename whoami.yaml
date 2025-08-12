@@ -21,6 +21,7 @@ spec:
       containers:
         - name: whoami
           image: traefik/whoami
+          resources: {}
 ---
 # Service that exposes the port 80
 apiVersion: v1
