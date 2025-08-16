@@ -44,7 +44,7 @@ spec:
               value: "587"
             - name: mail__options__auth__user
               value: ${EMAIL}
-            - name: mail__options__auth_pass
+            - name: mail__options__auth__pass
               valueFrom:
                 secretKeyRef:
                   name: smtp-secret
