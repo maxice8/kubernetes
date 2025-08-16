@@ -34,6 +34,21 @@ spec:
               value: "false"
             - name: url
               value: http://blog.${DOMAIN}
+            - name: mail__transport
+              value: "SMTP"
+            - name: mail__options__service
+              value: "Google"
+            - name: mail__options__host
+              value: "smtp.gmail.com"
+            - name: mail__options__port
+              value: "587"
+            - name: mail__options__auth__user
+              value: ${EMAIL}
+            - name: mail__options__auth_pass
+              valueFrom:
+                secretKeyRef:
+                  name: smtp-secret
+                  key: smtp-password
           ports:
             - containerPort: 2368
           volumeMounts:
@@ -96,4 +111,14 @@ spec:
   storageClassName: local-path
   resources:
     requests:
-      storage: 2Gi
+      storage: 10Gi
+---
+# Secret that holds the key to the SMTP
+apiVersion: v1
+kind: Secret
+metadata:
+  name: smtp-secret
+  namespace: ghost
+type: Opaque
+stringData:
+  smtp-password: "${EMAIL_PASS}"

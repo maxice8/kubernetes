@@ -86,5 +86,18 @@ uptime_kuma:
 	cat uptime-kuma.yaml | envsubst | kubectl apply -f -
 
 ghost:
-	@if [ -z "$(DOMAIN)" ]; then $(call log_error,Error: DOMAIN environment variable is required.); exit 1; fi
+	@exit_code=0; \
+	if [ -z "$(DOMAIN)" ]; then \
+		$(call log_error,Error: DOMAIN environment variable is required.); \
+		exit_code=1; \
+	fi; \
+	if [ -z "$(EMAIL)" ]; then \
+		$(call log_error,Error: EMAIL environment variable is required.); \
+		exit_code=1; \
+	fi; \
+	if [ -z "$(EMAIL_PASS)" ]; then \
+		$(call log_error,Error: EMAIL_PASS environment variable is required.); \
+		exit_code=1; \
+	fi; \
+	if [ $$exit_code -ne 0 ]; then exit $$exit_code; fi
 	cat ghost.yaml | envsubst | kubectl apply -f -
