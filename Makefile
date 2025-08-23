@@ -1,4 +1,4 @@
-.PHONY: all help k3s cert_manager certs traefik whoami forgejo syncthing uptime_kuma
+.PHONY: all help k3s cert_manager certs traefik whoami forgejo syncthing uptime_kuma ghost
 
 log_error = (>&2 printf '\033[0m[ \033[31mERR\033[0m ] %s\n' "$(1)" 2>&1)
 
@@ -16,6 +16,7 @@ help:
 	@echo "  forgejo             - Deploys Forgejo (Git service)."
 	@echo "  syncthing           - Deploys Syncthing with Tailscale integration."
 	@echo "  uptime_kuma         - Deploys Uptime Kuma with Tailscale integration."
+	@echo "  ghost               - Deploys Ghost CMS."
 
 ## Setup Targets
 
