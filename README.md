@@ -85,8 +85,6 @@ make syncthing
 
 This will create a uptime-kuma setup with the WebUI exposed over your tailscale network, the following components are created:
 
-This will create a complete syncthing setup with the WebUI exposed over your tailscale network, the following components are created:
-
 1. A namespace called kuma
 2. Persistent Volume Claims to store uptime-kuma data via local-storage
 3. A deployment of uptime-kuma
@@ -96,6 +94,12 @@ This will create a complete syncthing setup with the WebUI exposed over your tai
 ```sh
 make uptime_kuma
 ```
+
+### Ghost
+
+> Add DNS entry for blog.${DOMAIN}
+
+This will create a Ghost CMS setup exposed over the blog.${DOMAIN}, it includes sending email over your GMail account (provide the proper variables the Makefile asks for).
 
 #### Sources
 
